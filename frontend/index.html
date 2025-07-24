@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mythiq Gateway</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-indigo-600 to-purple-800 text-white font-sans min-h-screen">
+  <div id="app" class="p-6 max-w-4xl mx-auto">
+    <h1 class="text-4xl font-bold mb-6 text-center">🚀 Mythiq Gateway</h1>
+
+    <div class="mb-6">
+      <input 
+        id="userPrompt" 
+        type="text" 
+        placeholder="Describe your game idea..." 
+        class="p-3 w-full text-black rounded shadow focus:outline-none focus:ring-2 focus:ring-yellow-400"
+      />
+      <button 
+        id="createGameBtn" 
+        class="mt-4 bg-yellow-400 text-black font-bold py-2 px-6 rounded hover:bg-yellow-300 transition-all">
+        ✨ Create Game
+      </button>
+    </div>
+
+    <div id="gamePanel" class="mt-10 border-t pt-6"></div>
+    <div id="chatPanel" class="mt-8 border-t pt-6"></div>
+  </div>
+
+  <!-- ✅ Correct module reference for Vite inside Docker -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
