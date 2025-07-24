@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Builder Studio - Mythiq</title>
+    <link rel="stylesheet" href="../src/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'serif': ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        'mythiq-purple': '#6366f1',
+                        'mythiq-pink': '#ec4899',
+                        'mythiq-blue': '#3b82f6',
+                        'mythiq-teal': '#14b8a6',
+                        'mythiq-gold': '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-white overflow-x-hidden" x-data="gameStudio()">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-gray-900/80 backdrop-blur-md border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-r from-mythiq-purple to-mythiq-pink rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">M</span>
+                    </div>
+                    <span class="font-serif text-xl font-semibold">Mythiq</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="hover:text-mythiq-purple transition-colors">Home</a>
+                    <a href="studio.html" class="text-mythiq-purple">Game Studio</a>
+                    <a href="assistant.html" class="hover:text-mythiq-purple transition-colors">Assistant</a>
+                    <a href="gallery.html" class="hover:text-mythiq-purple transition-colors">Gallery</a>
+                    <button class="bg-gradient-to-r from-mythiq-purple to-mythiq-pink px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
+                        Save Project
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Studio Interface -->
+    <div class="pt-16 min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/10 to-pink-900/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Studio Header -->
+            <div class="text-center mb-8">
+                <h1 class="font-serif text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-mythiq-purple via-mythiq-pink to-mythiq-blue bg-clip-text text-transparent">
+                    Game Builder Studio
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+                    Transform your imagination into playable games with AI-powered creation tools
+                </p>
+            </div>
+
+            <!-- Studio Layout -->
+            <div class="grid lg:grid-cols-2 gap-8 h-[calc(100vh-200px)]">
+                <!-- Left Panel - Creation Tools -->
+                <div class="space-y-6">
+                    <!-- Game Prompt Input -->
+                    <div class="bg-gray-800/80 rounded-2xl p-6 backdrop-blur-sm border border-gray-700">
+                        <h2 class="text-2xl font-semibold mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-gradient-to-r from-mythiq-purple to-mythiq-pink rounded-lg flex items-center justify-center mr-3">
+                                ✨
+                            </span>
+                            Describe Your Game
+                        </h2>
+                        <textarea 
+                            x-model="gamePrompt"
+                            @input="updatePreview()"
+                            placeholder="Describe the game you want to create... For example: 'A magical adventure where players explore an enchanted forest, solve puzzles using elemental magic, and befriend mystical creatures to save the realm from darkness.'"
+                            class="w-full h-32 bg-gray-700/50 border border-gray-600 rounded-xl p-4 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-mythiq-purple focus:border-transparent"
+                        ></textarea>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-sm text-gray-400" x-text="`${gamePrompt.length}/500 characters`"></span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-400">Mood:</span>
+                                <span class="px-2 py-1 rounded-lg text-xs font-medium" 
+                                      :class="getMoodColor(detectedMood)" 
+                                      x-text="detectedMood"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Genre & Style Selection -->
+                    <div class="bg-gray-800/80 rounded-2xl p-6 backdrop-blur-sm border border-gray-700">
+                        <h3 class="text-xl font-semibold mb-4">Genre & Style</h3>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Genre</label>
+                                <select x-model="selectedGenre" @change="updatePreview()" class="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-mythiq-purple">
+                                    <option value="adventure">Adventure</option>
+                                    <option value="action">Action</option>
+                                    <option value="puzzle">Puzzle</option>
+                                    <option value="rpg">RPG</option>
+                                    <option value="platformer">Platformer</option>
+                                    <option value="strategy">Strategy</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Art Style</label>
+                                <select x-model="selectedStyle" @change="updatePreview()" class="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-mythiq-purple">
+                                    <option value="pixel">Pixel Art</option>
+                                    <option value="cartoon">Cartoon</option>
+                                    <option value="realistic">Realistic</option>
+                                    <option value="minimalist">Minimalist</option>
+                                    <option value="fantasy">Fantasy</option>
+                                    <option value="cyberpunk">Cyberpunk</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Mechanics Selection -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-300 mb-3">Game Mechanics</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <template x-for="mechanic in availableMechanics" :key="mechanic">
+                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                        <input type="checkbox" 
+                                               :value="mechanic" 
+                                               x-model="selectedMechanics"
+                                               @change="updatePreview()"
+                                               class="rounded border-gray-600 text-mythiq-purple focus:ring-mythiq-purple">
+                                        <span class="text-sm" x-text="mechanic"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Difficulty & Length -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Difficulty</label>
+                                <select x-model="difficulty" @change="updatePreview()" class="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-mythiq-purple">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="hard">Hard</option>
+                                    <option value="expert">Expert</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Game Length</label>
+                                <select x-model="gameLength" @change="updatePreview()" class="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-mythiq-purple">
+                                    <option value="short">Short (5-15 min)</option>
+                                    <option value="medium">Medium (15-45 min)</option>
+                                    <option value="long">Long (45+ min)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-4">
+                        <button @click="generateGame()" 
+                                :disabled="!gamePrompt.trim()"
+                                :class="gamePrompt.trim() ? 'bg-gradient-to-r from-mythiq-purple to-mythiq-pink hover:scale-105' : 'bg-gray-600 cursor-not-allowed'"
+                                class="flex-1 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-lg">
+                            <span x-show="!isGenerating">🎮 Generate Game</span>
+                            <span x-show="isGenerating" class="flex items-center justify-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Generating...
+                            </span>
+                        </button>
+                        <button @click="playGame()" 
+                                :disabled="!gameGenerated"
+                                :class="gameGenerated ? 'bg-gradient-to-r from-mythiq-teal to-mythiq-blue hover:scale-105' : 'bg-gray-600 cursor-not-allowed'"
+                                class="px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-lg">
+                            ▶ Play
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Preview & Output -->
+                <div class="space-y-6">
+                    <!-- Game Preview -->
+                    <div class="bg-gray-800/80 rounded-2xl p-6 backdrop-blur-sm border border-gray-700 h-full">
+                        <h2 class="text-2xl font-semibold mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-gradient-to-r from-mythiq-teal to-mythiq-blue rounded-lg flex items-center justify-center mr-3">
+                                👁️
+                            </span>
+                            Live Preview
+                        </h2>
+
+                        <!-- Game Canvas/Preview Area -->
+                        <div class="bg-gray-900/50 rounded-xl p-4 mb-6 min-h-[300px] border-2 border-dashed border-gray-600 flex items-center justify-center relative overflow-hidden">
+                            <div x-show="!gameGenerated && !isGenerating" class="text-center text-gray-400">
+                                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-mythiq-purple to-mythiq-pink rounded-full flex items-center justify-center opacity-50">
+                                    🎮
+                                </div>
+                                <p>Your game preview will appear here</p>
+                                <p class="text-sm mt-2">Start by describing your game idea above</p>
+                            </div>
+
+                            <div x-show="isGenerating" class="text-center">
+                                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-mythiq-purple to-mythiq-pink rounded-full flex items-center justify-center animate-pulse">
+                                    ⚡
+                                </div>
+                                <p class="text-lg font-semibold">Creating your game...</p>
+                                <div class="mt-4 w-64 bg-gray-700 rounded-full h-2 mx-auto">
+                                    <div class="bg-gradient-to-r from-mythiq-purple to-mythiq-pink h-2 rounded-full transition-all duration-1000" 
+                                         :style="`width: ${generationProgress}%`"></div>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-2" x-text="generationStatus"></p>
+                            </div>
+
+                            <div x-show="gameGenerated" class="w-full">
+                                <!-- Game Preview Content -->
+                                <div class="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-6 border border-purple-500/30">
+                                    <h3 class="text-xl font-bold mb-2" x-text="generatedGame.title"></h3>
+                                    <p class="text-gray-300 mb-4" x-text="generatedGame.description"></p>
+                                    
+                                    <!-- Mock Game Screen -->
+                                    <div class="bg-gray-800 rounded-lg p-4 mb-4 aspect-video flex items-center justify-center border">
+                                        <div class="text-center">
+                                            <div class="w-12 h-12 mx-auto mb-2 bg-gradient-to-r from-mythiq-gold to-yellow-500 rounded-full flex items-center justify-center">
+                                                🏰
+                                            </div>
+                                            <p class="text-sm text-gray-300">Game Screen Preview</p>
+                                            <p class="text-xs text-gray-500 mt-1" x-text="`${selectedGenre} • ${selectedStyle}`"></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Game Stats -->
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <span class="text-gray-400">Genre:</span>
+                                            <span class="ml-2 font-medium" x-text="selectedGenre"></span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-400">Style:</span>
+                                            <span class="ml-2 font-medium" x-text="selectedStyle"></span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-400">Difficulty:</span>
+                                            <span class="ml-2 font-medium" x-text="difficulty"></span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-400">Length:</span>
+                                            <span class="ml-2 font-medium" x-text="gameLength"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Game Details -->
+                        <div x-show="gameGenerated" class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-mythiq-purple mb-2">Game Mechanics</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="mechanic in selectedMechanics" :key="mechanic">
+                                        <span class="px-3 py-1 bg-mythiq-purple/20 text-mythiq-purple rounded-full text-sm" x-text="mechanic"></span>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-mythiq-pink mb-2">Emotional Tone</h4>
+                                <span class="px-3 py-1 rounded-full text-sm font-medium" 
+                                      :class="getMoodColor(detectedMood)" 
+                                      x-text="detectedMood"></span>
+                            </div>
+
+                            <!-- Export Options -->
+                            <div class="pt-4 border-t border-gray-700">
+                                <h4 class="font-semibold mb-3">Export Options</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition-colors">
+                                        📱 Mobile APK
+                                    </button>
+                                    <button class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition-colors">
+                                        🌐 Web Game
+                                    </button>
+                                    <button class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition-colors">
+                                        💻 Desktop EXE
+                                    </button>
+                                    <button class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition-colors">
+                                        🎮 Godot Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Assistant -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button @click="showAssistant = !showAssistant" 
+                class="w-14 h-14 bg-gradient-to-r from-mythiq-purple to-mythiq-pink rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+            <span class="text-xl">🤖</span>
+        </button>
+        
+        <div x-show="showAssistant" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="absolute bottom-16 right-0 w-80 bg-gray-800 rounded-2xl p-4 shadow-2xl border border-gray-700">
+            <h3 class="font-semibold mb-2">AI Assistant</h3>
+            <p class="text-sm text-gray-300 mb-3">Need help with your game? I'm here to assist!</p>
+            <div class="space-y-2">
+                <button class="w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors">
+                    💡 Suggest game mechanics
+                </button>
+                <button class="w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors">
+                    🎨 Improve art style
+                </button>
+                <button class="w-full text-left px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors">
+                    📖 Add story elements
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function gameStudio() {
+            return {
+                gamePrompt: '',
+                selectedGenre: 'adventure',
+                selectedStyle: 'pixel',
+                selectedMechanics: ['exploration'],
+                difficulty: 'medium',
+                gameLength: 'medium',
+                detectedMood: 'neutral',
+                isGenerating: false,
+                gameGenerated: false,
+                generationProgress: 0,
+                generationStatus: 'Initializing...',
+                showAssistant: false,
+                generatedGame: {
+                    title: '',
+                    description: ''
+                },
+                availableMechanics: [
+                    'exploration', 'combat', 'puzzle-solving', 'platforming',
+                    'resource-management', 'story-driven', 'multiplayer', 'crafting',
+                    'stealth', 'racing', 'building', 'survival'
+                ],
+
+                updatePreview() {
+                    this.detectedMood = this.detectMood(this.gamePrompt);
+                },
+
+                detectMood(text) {
+                    const moodKeywords = {
+                        epic: ['epic', 'legendary', 'heroic', 'grand', 'mighty'],
+                        dark: ['dark', 'scary', 'horror', 'evil', 'sinister'],
+                        whimsical: ['funny', 'cute', 'playful', 'silly', 'magical'],
+                        mysterious: ['mystery', 'secret', 'hidden', 'unknown', 'enigma'],
+                        adventurous: ['adventure', 'explore', 'journey', 'quest', 'discover']
+                    };
+
+                    const lowerText = text.toLowerCase();
+                    for (const [mood, keywords] of Object.entries(moodKeywords)) {
+                        if (keywords.some(keyword => lowerText.includes(keyword))) {
+                            return mood;
+                        }
+                    }
+                    return 'neutral';
+                },
+
+                getMoodColor(mood) {
+                    const colors = {
+                        epic: 'bg-yellow-500/20 text-yellow-400',
+                        dark: 'bg-purple-500/20 text-purple-400',
+                        whimsical: 'bg-pink-500/20 text-pink-400',
+                        mysterious: 'bg-indigo-500/20 text-indigo-400',
+                        adventurous: 'bg-green-500/20 text-green-400',
+                        neutral: 'bg-gray-500/20 text-gray-400'
+                    };
+                    return colors[mood] || colors.neutral;
+                },
+
+                async generateGame() {
+                    if (!this.gamePrompt.trim()) return;
+
+                    this.isGenerating = true;
+                    this.gameGenerated = false;
+                    this.generationProgress = 0;
+
+                    const steps = [
+                        'Analyzing your prompt...',
+                        'Generating game mechanics...',
+                        'Creating art assets...',
+                        'Building game logic...',
+                        'Optimizing performance...',
+                        'Finalizing your game...'
+                    ];
+
+                    for (let i = 0; i < steps.length; i++) {
+                        this.generationStatus = steps[i];
+                        this.generationProgress = ((i + 1) / steps.length) * 100;
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                    }
+
+                    // Generate game details
+                    this.generatedGame = {
+                        title: this.generateGameTitle(),
+                        description: this.generateGameDescription()
+                    };
+
+                    this.isGenerating = false;
+                    this.gameGenerated = true;
+                },
+
+                generateGameTitle() {
+                    const titlePrefixes = {
+                        adventure: ['Quest for', 'Journey to', 'Adventures in'],
+                        action: ['Battle of', 'War for', 'Strike at'],
+                        puzzle: ['Mystery of', 'Enigma of', 'Riddle of'],
+                        rpg: ['Chronicles of', 'Legend of', 'Tales of']
+                    };
+                    
+                    const prefix = titlePrefixes[this.selectedGenre]?.[0] || 'Adventures in';
+                    return `${prefix} the ${this.detectedMood.charAt(0).toUpperCase() + this.detectedMood.slice(1)} Realm`;
+                },
+
+                generateGameDescription() {
+                    return `A ${this.detectedMood} ${this.selectedGenre} game featuring ${this.selectedMechanics.join(', ')} mechanics. Built with ${this.selectedStyle} art style for a ${this.gameLength} gaming experience.`;
+                },
+
+                playGame() {
+                    if (!this.gameGenerated) return;
+                    alert('🎮 Game would launch here! This is a demo of the interface.');
+                }
+            }
+        }
+    </script>
+    <script src="../src/js/main.js"></script>
+</body>
+</html>
+
